@@ -19,25 +19,20 @@ class GeneticAlgorithm:
         self.len_integer = (1 if np.min(self.population) < 0 else 0) + \
                            np.log10(max(abs(min_val), abs(max_val))).astype(int) + 1
         self.precision = precision
-        tmp_max, tmp_argmax = 0.0, 0
+        y = np.zeros((max_generations,))
         for i in range(max_generations):
             self.select()
             np.random.shuffle(self.population)
-            # attention: l = l=self.len_integer + 1 + precision
             self.population_str = np.array(['{:0{l}.{p}f}'.format(x[0], l=self.len_integer + 1 + precision,
                                                                   p=precision) for x in self.population])
             self.crossover()
             self.mutate()
             self.population = np.array([float(x) for x in self.population_str])
             fn = self.fitness()
-            tmp = max(fn)
-            if tmp > tmp_max:
-                tmp_max, tmp_argmax = tmp, self.population[np.argmax(fn)]
-        print(tmp_argmax, tmp_max)
+            y[i] = max(fn)
+        return y
 
     def fitness(self):
-        # return self.population + 10.0 * np.sin(5.0 * self.population) + 7.0 * np.cos(
-        #     4.0 * self.population)
         return np.sin(self.population - 10000) / (self.population - 10000)
 
     def select(self):
@@ -45,7 +40,9 @@ class GeneticAlgorithm:
         Roulette wheel selection
         """
         fn = self.fitness()
-        fn -= fn.min() - 1e-6  # make positive
+        fn -= fn.min()
+        if fn.sum() == 0:
+            return
         rnd = np.random.rand(len(fn))
         fn = np.append([-1], fn.cumsum() / fn.sum())  # cumulative_sum, normalized by sum
         count = [len([x for x in rnd if fn[i] < x <= fn[i + 1]]) for i in range(rnd.size)]
@@ -73,10 +70,6 @@ class GeneticAlgorithm:
 
 
 if __name__ == '__main__':
-    import time
-
     g = GeneticAlgorithm()
-    start_time = time.time()
-    g.ga(init_population=50, max_generations=50, min_val=0, max_val=1000000, mutation_rate=1, precision=5)
-    print("--- %s seconds ---" % (time.time() - start_time))
-    # # 7.8570
+    y = g.ga(init_population=100, max_generations=100, min_val=0, max_val=1000000, mutation_rate=1, precision=5).max()
+    print(y)
