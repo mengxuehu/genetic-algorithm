@@ -80,5 +80,5 @@ class GeneticAlgorithm:
 if __name__ == '__main__':
     g = GeneticAlgorithm()
     y = g.ga(init_population=100, max_generations=100, min_val=-1000000, max_val=1000000,
-         mutation_rate=0.02, crossover_rate=0.3, precision=5).max()
+             mutation_rate=0.02, crossover_rate=0.3, precision=5).max()
     print(y)
